@@ -8,27 +8,28 @@ using Microsoft.EntityFrameworkCore;
 using IdentityApp.Data;
 using IdentityApp.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace IdentityApp.Pages.Invoices
 {
     [AllowAnonymous]
-    public class IndexModel : PageModel
+    public class IndexModel : DI_BasePageModel
     {
-        private readonly IdentityApp.Data.ApplicationDbContext _context;
 
-        public IndexModel(IdentityApp.Data.ApplicationDbContext context)
+        public IndexModel(ApplicationDbContext context,
+            IAuthorizationService authorizationService,
+            UserManager<IdentityUser> userManager)
+            : base(context, authorizationService, userManager)
         {
-            _context = context;
+            
         }
 
         public IList<Invoice> Invoice { get;set; } = default!;
 
         public async Task OnGetAsync()
         {
-            if (_context.Invoice != null)
-            {
-                Invoice = await _context.Invoice.ToListAsync();
-            }
+            var currenUserId = UserManager.GetUserId(User);
+            Invoice = await Context.Invoice.Where(i => i.CreatorId == currenUserId).ToListAsync();
         }
     }
 }

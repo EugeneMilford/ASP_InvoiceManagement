@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using IdentityApp.Data;
 using IdentityApp.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using IdentityApp.Authorization;
 
 namespace IdentityApp.Pages.Invoices
 {
-    public class CreateModel : PageModel
+    public class CreateModel : DI_BasePageModel
     {
-        private readonly IdentityApp.Data.ApplicationDbContext _context;
-
-        public CreateModel(IdentityApp.Data.ApplicationDbContext context)
+        public CreateModel(ApplicationDbContext context,
+            IAuthorizationService authorizationService,
+            UserManager<IdentityUser> userManager)
+            : base(context, authorizationService, userManager)
         {
-            _context = context;
+            
         }
 
         public IActionResult OnGet()
@@ -31,13 +35,20 @@ namespace IdentityApp.Pages.Invoices
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
         {
-          if (!ModelState.IsValid)
-            {
-                return Page();
-            }
 
-            _context.Invoice.Add(Invoice);
-            await _context.SaveChangesAsync();
+            //Adding Authorization:
+            Invoice.CreatorId = UserManager.GetUserId(User);
+
+            var isAuthorized = await AuthorizationService.AuthorizeAsync(
+                User, Invoice, InvoiceOperations.Create
+                );
+
+            //If Authorization is false
+            if(isAuthorized.Succeeded == false)
+                return Forbid();
+
+            Context.Invoice.Add(Invoice);
+            await Context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
         }

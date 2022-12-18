@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using IdentityApp.Models;
+
 
 namespace IdentityApp.Authorization
 {
@@ -32,5 +36,7 @@ namespace IdentityApp.Authorization
 
         public static readonly string ApprovedOperationName = "Approved";
         public static readonly string RejectedOperationName = "Rejected";
+
+        public static readonly string InvoiceManagerRole = "InvoiceManager";
     }
 }
